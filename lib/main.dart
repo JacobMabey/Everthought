@@ -28,10 +28,10 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Everthought'),
     );
   }
 }
@@ -55,22 +55,15 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
   Color color = Colors.red;
 
-  void _incrementCounter() {
+  void _addNote() {
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
       // so that the display can reflect the updated values. If we changed
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
-      _counter++;
-      if (color == Colors.red) {
-        color = Colors.blue;
-      } else {
-        color = Colors.red;
-      }
     });
   }
 
@@ -91,8 +84,22 @@ class _MyHomePageState extends State<MyHomePage> {
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
+        centerTitle: true,
+
+        
+        actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 15.0),
+              child: IconButton(
+                onPressed: () => {},
+                color: Theme.of(context).colorScheme.inverseSurface,
+                tooltip: "Settings",
+                icon: const Icon(Icons.settings)
+              ),
+            )
+          ]
       ),
-      body: Center(
+      body: const Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
         child: Column(
@@ -111,21 +118,26 @@ class _MyHomePageState extends State<MyHomePage> {
           // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
             Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+              'Welcome to my Notes & Reminders App: Everthought!',
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
+        onPressed: _addNote,
+        shape: const CircleBorder(eccentricity: 0.0),
+        elevation: 4,
+        tooltip: 'Add Note',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(icon: Icon(Icons.note), label: "Notes"),
+          BottomNavigationBarItem(icon: Icon(Icons.notifications_active), label: "Reminders"),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+          ],
+      ),
     );
   }
 }
