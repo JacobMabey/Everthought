@@ -21,7 +21,6 @@ class NotesState extends State<NotesPage> {
   }
 
   Future<String> fetchApiData(String path) async {
-    print('hello');
     var response = await http.get(Uri.https('swapi.dev', "/api/$path"));
     return response.body;
   }
