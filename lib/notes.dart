@@ -1,3 +1,4 @@
+import 'package:everthought/edit_note.dart';
 import 'package:flutter/material.dart';
 
 class NotesPage extends StatefulWidget {
@@ -12,7 +13,7 @@ class NotesState extends State<NotesPage> {
 
   void _addNote() {
     setState(() {
-      // Add Note
+      Navigator.push(context, MaterialPageRoute(builder: (context) =>  const EditNotePage()));
     });
   }
 
