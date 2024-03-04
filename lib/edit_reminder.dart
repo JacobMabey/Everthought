@@ -1,68 +1,29 @@
 import 'package:everthought/note/note.dart';
 import 'package:everthought/note/notes_global.dart';
+import 'package:everthought/reminder/reminder.dart';
+import 'package:everthought/reminder/reminder_global.dart';
 import 'package:flutter/material.dart';
-import 'package:speech_to_text/speech_recognition_result.dart';
-import 'package:speech_to_text/speech_to_text.dart';
 
-class EditNotePage extends StatefulWidget {
-  const EditNotePage({super.key, this.title, this.text, this.updateIndex});
-
-  final String? title;
-  final String? text;
-  final int? updateIndex;
+class EditReminderPage extends StatefulWidget {
+  const EditReminderPage({super.key});
 
   @override
-  State<StatefulWidget> createState() => EditNoteState(title ?? "", text ?? "", updateIndex ?? 0);
+  State<StatefulWidget> createState() => EditReminderState();
   
 }
 
-class EditNoteState extends State<EditNotePage> {
-  SpeechToText stt = SpeechToText();
-  bool micEnabled = false;
-
-  bool updateMode = false;
-  int updateIndex = 0;
+class EditReminderState extends State<EditReminderPage> {
 
   String title = "";
-  String text = "";
+  String description = "";
+  DateTime date = DateTime.now();
+  TimeOfDay time = TimeOfDay.now();
+  RepeatType repeatType = RepeatType.none;
 
-  @override
-  void initState() {
-    super.initState();
-    initSpeech();
-  }
-
-  void initSpeech() async {
-    micEnabled = await stt.initialize();
-    setState(() {});
-  }
-
-  void startSTT() async {
-    await stt.listen(onResult: (result) {
-      setState(() {
-        text += result.recognizedWords;
-      });
-    });
-  }
-  void stopSTT() async {
-    await stt.stop();
-    setState(() {});
-  }
-  
-  EditNoteState(this.title, this.text, this.updateIndex) {
-    updateMode = !(title.isEmpty && text.isEmpty);
-  }
-
-
-  void _saveNote() {
+  void _saveReminder() {
     setState(() {
       //Save Note
-      if (updateMode) {
-        NotesGlobal.notesList.removeAt(updateIndex);
-        NotesGlobal.notesList.insert(updateIndex, Note(title: title, text: text));
-      } else {
-        NotesGlobal.notesList.add(Note(title: title, text: text));
-      }
+      RemindersGlobal.remindersList.add(Reminder(title, description, DateTime(DateTime.now().year, date.month, date.day, time.hour, time.minute), repeatType));
       
       Navigator.pop(context);
       
@@ -75,7 +36,7 @@ class EditNoteState extends State<EditNotePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Notes'),
+        title: const Text('Reminders'),
         centerTitle: false,
       ),
 
@@ -95,7 +56,6 @@ class EditNoteState extends State<EditNotePage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
                   child: TextField(
-                    controller: TextEditingController(text: title),
                     onChanged: (value) {
                       title = value;
                     },
@@ -105,7 +65,7 @@ class EditNoteState extends State<EditNotePage> {
                       fontWeight: FontWeight.bold
                     ),
                     decoration: const InputDecoration(
-                      hintText: 'Note Title',
+                      hintText: 'Reminder Title',
                       hintStyle: TextStyle(
                         color: Color.fromARGB(100, 0, 0, 0)
                       ),
@@ -125,17 +85,16 @@ class EditNoteState extends State<EditNotePage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
                   child: SizedBox(
-                    height: 400,
+                    height: 200,
                     child: TextField(
-                      controller: TextEditingController(text: text),
                       onChanged: (value) {
-                        text = value;
+                        description = value;
                       },
                       keyboardType: TextInputType.multiline,
                       maxLines: null,
                       expands: true,
                       decoration: const InputDecoration(
-                        hintText: 'Input your note here...',
+                        hintText: 'Input your reminder description here...',
                         hintStyle: TextStyle(
                           color: Color.fromARGB(100, 0, 0, 0)
                         ),
@@ -146,15 +105,60 @@ class EditNoteState extends State<EditNotePage> {
                     )
                   )
                 ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+                      child: FloatingActionButton.extended(
+                        tooltip: "Select Date",
+                        label: const Text("Select Date"),
+                        onPressed: () async {
+                        date = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(2020),
+                          lastDate: DateTime(2100)
+                        ) ?? DateTime.now();
+                      },),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+                      child: FloatingActionButton.extended(
+                        tooltip: "Select Time",
+                        label: const Text("Select Time"),
+                        onPressed: () async {
+                        time = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        ) ?? TimeOfDay.now();
+                      }),
+                    )
+                  ]
+                ),
+                DropdownButton(
+                  value: repeatType,
+                  onChanged: (RepeatType? type) {
+                    setState(() {
+                      repeatType = type ?? RepeatType.none;
+                    });
+                  },
+                  items: RepeatType.values.map((RepeatType type) {
+                    return DropdownMenuItem(
+                      value: type,
+                      child: Text(type.name)
+                    );
+                  }).toList()
+                ),
               ],
             ),
 
             floatingActionButton: FloatingActionButton.extended(
               
-              onPressed: _saveNote,
+              onPressed: _saveReminder,
               shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(50))),
               elevation: 4,
-              tooltip: 'Save Note',
+              tooltip: 'Save Reminder',
               extendedPadding: const EdgeInsets.all(20),
               label: const Text('Save'),
               extendedTextStyle: const TextStyle(

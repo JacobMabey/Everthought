@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:everthought/edit_note.dart';
+import 'package:everthought/note/notes_global.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -16,7 +17,8 @@ class NotesState extends State<NotesPage> {
 
   void _addNote() {
     setState(() {
-      Navigator.push(context, MaterialPageRoute(builder: (context) =>  const EditNotePage()));
+      Route route = MaterialPageRoute(builder: (context) => const EditNotePage());
+      Navigator.push(context, route).then((value) => setState(() => {}));
     });
   }
 
@@ -44,26 +46,34 @@ class NotesState extends State<NotesPage> {
 
     return Scaffold(
       //body: Text(data["name"]),
-      body: FutureBuilder(
-        future: data,
-        initialData: "Code sample",
-        builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          if (snapshot.hasError) {
-            return Text(snapshot.error.toString());
-          } else {
-            final data = snapshot.data as String;
-            return Text(data);
-          }
-        }
-        else {
-          return const Center(
-            child: CircularProgressIndicator(
-              color: Colors.blue,
-            ),
-          );
-        }
-      }),
+      body: Column(
+        children: [
+          FutureBuilder(
+            future: data,
+            initialData: "Code sample",
+            builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              if (snapshot.hasError) {
+                return Text(snapshot.error.toString());
+              } else {
+                final data = snapshot.data as String;
+                return Text(data);
+              }
+            }
+            else {
+              return const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.blue,
+                ),
+              );
+            }
+          }),
+
+          NotesGlobal.getWidget(),
+        ]
+      ),
+
+
 
       floatingActionButton: FloatingActionButton(
         onPressed: _addNote,

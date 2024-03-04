@@ -1,3 +1,5 @@
+import 'package:everthought/edit_reminder.dart';
+import 'package:everthought/reminder/reminder_global.dart';
 import 'package:flutter/material.dart';
 
 class RemindersPage extends StatefulWidget {
@@ -11,7 +13,8 @@ class RemindersState extends State<RemindersPage> {
 
   void _addReminder() {
     setState(() {
-      // Add Reminder
+      Route route = MaterialPageRoute(builder: (context) => const EditReminderPage());
+      Navigator.push(context, route).then((value) => setState(() => {}));
     });
   }
 
@@ -19,7 +22,13 @@ class RemindersState extends State<RemindersPage> {
   Widget build(BuildContext context) {
     
     return Scaffold(
-      body: const Text('Welcome to Reminders!'),
+      body: Column(
+        children: [
+          RemindersGlobal.getWidget(),
+        ]
+      ),
+
+
 
       floatingActionButton: FloatingActionButton(
         onPressed: _addReminder,
