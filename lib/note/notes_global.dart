@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 
 class NotesGlobal {
   static List<Note> notesList = [];
-
-
+  
   static Widget getWidget() {
     return notesList.isEmpty
     ? const Center(

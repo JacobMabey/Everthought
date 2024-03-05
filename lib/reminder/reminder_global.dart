@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 class RemindersGlobal {
   static List<Reminder> remindersList = [];
 
-
   static Widget getWidget() {
     return remindersList.isEmpty
     ? const Center(

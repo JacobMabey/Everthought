@@ -1,8 +1,11 @@
+import 'dart:js_interop_unsafe';
+
 import 'package:everthought/note/note.dart';
 import 'package:everthought/note/notes_global.dart';
 import 'package:everthought/reminder/reminder.dart';
 import 'package:everthought/reminder/reminder_global.dart';
 import 'package:flutter/material.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 class EditReminderPage extends StatefulWidget {
   const EditReminderPage({super.key});
@@ -13,6 +16,11 @@ class EditReminderPage extends StatefulWidget {
 }
 
 class EditReminderState extends State<EditReminderPage> {
+  SpeechToText stt = SpeechToText();
+  bool micEnabled = false;
+  bool listening = false;
+  int currentTextLength = 0;
+  Color micColor = Colors.black;
 
   String title = "";
   String description = "";
@@ -20,13 +28,44 @@ class EditReminderState extends State<EditReminderPage> {
   TimeOfDay time = TimeOfDay.now();
   RepeatType repeatType = RepeatType.none;
 
+  @override
+  void initState() {
+    super.initState();
+    initSpeech();
+  }
+
+  void initSpeech() async {
+    micEnabled = await stt.initialize();
+    setState(() {});
+  }
+
+  void startSTT() async {
+    listening = true;
+    currentTextLength = description.length;
+    await stt.listen(onResult: (result) {
+      setState(() {
+        description = description.substring(0, currentTextLength) + result.recognizedWords;
+      });
+    });
+    setState(() {
+      micColor = Colors.red;
+    });
+  }
+  void stopSTT() async {
+    listening = false;
+    setState(() {
+      micColor = Colors.black;
+    });
+    await stt.stop();
+    setState(() {});
+  }
+
   void _saveReminder() {
     setState(() {
       //Save Note
       RemindersGlobal.remindersList.add(Reminder(title, description, DateTime(DateTime.now().year, date.month, date.day, time.hour, time.minute), repeatType));
-      
+      if (listening) stopSTT();
       Navigator.pop(context);
-      
     });
   }
 
@@ -56,6 +95,7 @@ class EditReminderState extends State<EditReminderPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
                   child: TextField(
+                    controller: TextEditingController(text: title),
                     onChanged: (value) {
                       title = value;
                     },
@@ -87,6 +127,7 @@ class EditReminderState extends State<EditReminderPage> {
                   child: SizedBox(
                     height: 200,
                     child: TextField(
+                      controller: TextEditingController(text: description),
                       onChanged: (value) {
                         description = value;
                       },
@@ -105,6 +146,17 @@ class EditReminderState extends State<EditReminderPage> {
                     )
                   )
                 ),
+                FloatingActionButton(
+                  onPressed: () {
+                    if (listening) {
+                      stopSTT();
+                    } else {
+                      startSTT();
+                    }
+                  },
+                  foregroundColor: micColor,
+                  child: const Icon(Icons.mic),
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -120,6 +172,7 @@ class EditReminderState extends State<EditReminderPage> {
                           firstDate: DateTime(2020),
                           lastDate: DateTime(2100)
                         ) ?? DateTime.now();
+                        setState(() {});
                       },),
                     ),
                     Padding(
@@ -132,6 +185,7 @@ class EditReminderState extends State<EditReminderPage> {
                           context: context,
                           initialTime: TimeOfDay.now(),
                         ) ?? TimeOfDay.now();
+                        setState(() {});
                       }),
                     )
                   ]
@@ -150,6 +204,13 @@ class EditReminderState extends State<EditReminderPage> {
                     );
                   }).toList()
                 ),
+                Text(
+                  "${date.month}/${date.day}   ${time.hour}:${time.minute < 10 ? "0" : ""}${time.minute}",
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontStyle: FontStyle.italic
+                  ),
+                )
               ],
             ),
 

@@ -19,6 +19,9 @@ class EditNotePage extends StatefulWidget {
 class EditNoteState extends State<EditNotePage> {
   SpeechToText stt = SpeechToText();
   bool micEnabled = false;
+  bool listening = false;
+  int currentTextLength = 0;
+  Color micColor = Colors.black;
 
   bool updateMode = false;
   int updateIndex = 0;
@@ -38,13 +41,22 @@ class EditNoteState extends State<EditNotePage> {
   }
 
   void startSTT() async {
+    listening = true;
+    currentTextLength = text.length;
     await stt.listen(onResult: (result) {
       setState(() {
-        text += result.recognizedWords;
+        text = text.substring(0, currentTextLength) + result.recognizedWords;
       });
+    });
+    setState(() {
+      micColor = Colors.red;
     });
   }
   void stopSTT() async {
+    listening = false;
+    setState(() {
+      micColor = Colors.black;
+    });
     await stt.stop();
     setState(() {});
   }
@@ -146,6 +158,18 @@ class EditNoteState extends State<EditNotePage> {
                     )
                   )
                 ),
+
+                FloatingActionButton(
+                  onPressed: () {
+                    if (listening) {
+                      stopSTT();
+                    } else {
+                      startSTT();
+                    }
+                  },
+                  foregroundColor: micColor,
+                  child: const Icon(Icons.mic),
+                )
               ],
             ),
 
@@ -160,7 +184,7 @@ class EditNoteState extends State<EditNotePage> {
               extendedTextStyle: const TextStyle(
                 fontSize: 20
               ),
-          )
+            ),
         ),
       )
     );

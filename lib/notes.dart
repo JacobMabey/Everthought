@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:everthought/edit_note.dart';
 import 'package:everthought/note/notes_global.dart';
@@ -22,42 +23,49 @@ class NotesState extends State<NotesPage> {
     });
   }
 
-  Future<String> fetchApiData(String path) async {
-    var response = await http.get(Uri.https('swapi.dev', "/api/$path"));
-    return response.body;
-  }
-
-  dynamic getApiPerson(int id) async {
+  Future<String> fetchApiQuoteOfTheDay() async {
     dynamic jsonData;
-    await fetchApiData('people/$id').then((value) => {
-      jsonData = jsonDecode(value) as Map<String, dynamic>
+    await http.get(Uri.https('dummyjson.com', "/quotes/random"), headers: {
+      HttpHeaders.accessControlAllowOriginHeader: "*",
+      "Access-Control-Allow-Origin": "*",
+    }).then((response) => {
+      jsonData = jsonDecode(response.body) as Map<String, dynamic>
     });
-    return jsonData;
-  }
-
-  Future<String> getApiName(int id) async {
-    dynamic data = await getApiPerson(id);
-    return data['name'];
+    return jsonData["quote"];
   }
 
   @override
   Widget build(BuildContext context) {
-    final data = getApiName(1);
+    final quote = fetchApiQuoteOfTheDay();
 
     return Scaffold(
       //body: Text(data["name"]),
       body: Column(
         children: [
+          NotesGlobal.getWidget(),
+
           FutureBuilder(
-            future: data,
-            initialData: "Code sample",
+            future: quote,
+            initialData: "",
             builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
               if (snapshot.hasError) {
                 return Text(snapshot.error.toString());
               } else {
                 final data = snapshot.data as String;
-                return Text(data);
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 50),
+                  child:
+                    Text(
+                      "\"$data\"",
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.black26
+                      ),
+                    )
+                );
               }
             }
             else {
@@ -68,8 +76,6 @@ class NotesState extends State<NotesPage> {
               );
             }
           }),
-
-          NotesGlobal.getWidget(),
         ]
       ),
 
